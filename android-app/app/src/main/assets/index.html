@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0D1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>CampusOS — CSJMU Smart Navigator</title>
+  <meta name="description" content="AI-powered campus navigation for Chhatrapati Shahu Ji Maharaj University" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ====== SPLASH SCREEN ====== -->
+  <div id="splash-screen" class="screen active">
+    <div class="splash-content">
+      <div class="splash-logo">
+        <div class="splash-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="38" stroke="url(#logoGrad)" stroke-width="2.5" opacity="0.3"/>
+            <path d="M40 12 L44 28 L40 24 L36 28 Z" fill="#C75B39"/>
+            <circle cx="40" cy="40" r="8" fill="url(#logoGrad)" opacity="0.9"/>
+            <circle cx="40" cy="40" r="3" fill="#F7F0E3"/>
+            <path d="M40 50 C28 50 20 58 20 66 L60 66 C60 58 52 50 40 50Z" fill="#1A535C" opacity="0.6"/>
+            <path d="M30 62 L35 52 L40 56 L45 52 L50 62" stroke="#C75B39" stroke-width="1.5" fill="none"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="80" y2="80">
+                <stop offset="0%" stop-color="#C75B39"/>
+                <stop offset="100%" stop-color="#1A535C"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1 class="splash-title">Campus<span>OS</span></h1>
+        <p class="splash-tagline">Your Campus. Decoded.</p>
+      </div>
+      <div class="splash-university">CSJMU · Kanpur</div>
+      <div class="splash-loader">
+        <div class="splash-loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== LOGIN SCREEN ====== -->
+  <div id="login-screen" class="screen">
+    <div class="login-container">
+      <div class="login-header">
+        <div class="login-logo-small">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="8" fill="url(#logoGradSmall)"/>
+            <circle cx="20" cy="20" r="3" fill="#F7F0E3"/>
+            <defs>
+              <linearGradient id="logoGradSmall" x1="0" y1="0" x2="40" y2="40">
+                <stop offset="0%" stop-color="#C75B39"/>
+                <stop offset="100%" stop-color="#1A535C"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h2>Welcome to CampusOS</h2>
+        <p>Navigate CSJMU with confidence</p>
+      </div>
+
+      <div class="login-form" id="login-step-phone">
+        <div class="input-group">
+          <label>Phone Number</label>
+          <div class="phone-input">
+            <span class="country-code">+91</span>
+            <input type="tel" id="phone-input" placeholder="Enter your number" maxlength="10" />
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-send-otp">Send OTP</button>
+      </div>
+
+      <div class="login-form hidden" id="login-step-otp">
+        <div class="input-group">
+          <label>Enter OTP</label>
+          <div class="otp-inputs">
+            <input type="text" maxlength="1" class="otp-box" />
+            <input type="text" maxlength="1" class="otp-box" />
+            <input type="text" maxlength="1" class="otp-box" />
+            <input type="text" maxlength="1" class="otp-box" />
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-verify-otp">Verify</button>
+        <button class="btn-text" id="btn-resend">Resend OTP in <span id="resend-timer">30</span>s</button>
+      </div>
+
+      <div class="login-form hidden" id="login-step-profile">
+        <div class="input-group">
+          <label>Your Name</label>
+          <input type="text" id="profile-name" placeholder="Enter your name" />
+        </div>
+        <div class="input-group">
+          <label>I am a</label>
+          <div class="role-selector">
+            <button class="role-btn active" data-role="student">🎓 Student</button>
+            <button class="role-btn" data-role="parent">👨‍👩‍👧 Parent</button>
+            <button class="role-btn" data-role="visitor">🧳 Visitor</button>
+            <button class="role-btn" data-role="faculty">👨‍🏫 Faculty</button>
+          </div>
+        </div>
+        <div class="input-group optional-fields" id="student-fields">
+          <label>Optional Details</label>
+          <input type="text" id="profile-roll" placeholder="Roll Number (optional)" />
+          <select id="profile-dept">
+            <option value="">Select Department (optional)</option>
+            <option value="cse">Computer Science & Engineering</option>
+            <option value="ece">Electronics & Communication</option>
+            <option value="me">Mechanical Engineering</option>
+            <option value="ee">Electrical Engineering</option>
+            <option value="civil">Civil Engineering</option>
+            <option value="science">Science</option>
+            <option value="arts">Arts & Humanities</option>
+            <option value="commerce">Commerce & Business</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="btn-enter-campus">Enter Campus →</button>
+      </div>
+
+      <button class="btn-ghost" id="btn-guest">Continue as Guest</button>
+    </div>
+  </div>
+
+  <!-- ====== MAIN APP ====== -->
+  <div id="app-container" class="screen">
+
+    <!-- ---- MAP SCREEN (HOME) ---- -->
+    <div id="map-screen" class="tab-screen active">
+      <!-- Search Bar -->
+      <div class="search-bar-container">
+        <div class="search-bar" id="search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search rooms, buildings, people..." />
+          <button class="search-voice-btn" id="btn-voice" title="Voice Search">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          </button>
+        </div>
+        <!-- Search Results Dropdown -->
+        <div class="search-results hidden" id="search-results"></div>
+      </div>
+
+      <!-- Amenity Quick Access Pills -->
+      <div class="amenity-pills" id="amenity-pills">
+        <button class="pill" data-type="water"><span>🚰</span> Water</button>
+        <button class="pill" data-type="washroom"><span>🚻</span> Washroom</button>
+        <button class="pill" data-type="atm"><span>🏧</span> ATM</button>
+        <button class="pill" data-type="photocopy"><span>🖨️</span> Print</button>
+        <button class="pill" data-type="charging"><span>🔌</span> Charging</button>
+        <button class="pill" data-type="security"><span>🛡️</span> Security</button>
+      </div>
+
+      <!-- Map Container -->
+      <div id="map"></div>
+
+      <!-- Locate Me Button -->
+      <button class="fab-locate" id="btn-locate" title="My Location">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+      </button>
+
+      <!-- Mode Toggle -->
+      <div class="mode-toggle" id="mode-toggle">
+        <button class="mode-btn active" data-mode="walk" title="Walking">🚶</button>
+        <button class="mode-btn" data-mode="cycle" title="Cycling">🚲</button>
+        <button class="mode-btn" data-mode="vehicle" title="Vehicle">🛵</button>
+      </div>
+    </div>
+
+    <!-- ---- TIMETABLE SCREEN ---- -->
+    <div id="timetable-screen" class="tab-screen">
+      <div class="screen-header">
+        <h2>Today's Schedule</h2>
+        <p class="date-display" id="today-date"></p>
+      </div>
+      <div class="timetable-list" id="timetable-list">
+        <!-- Filled by JS -->
+      </div>
+      <div class="timetable-exam-mode">
+        <div class="exam-card">
+          <div class="exam-icon">📝</div>
+          <h3>Exam Mode</h3>
+          <p>Enter your roll number to find your exam hall</p>
+          <div class="exam-input-row">
+            <input type="text" id="exam-roll" placeholder="Roll Number" />
+            <button class="btn-small" id="btn-find-hall">Find Hall</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- SOS SCREEN ---- -->
+    <div id="sos-screen" class="tab-screen">
+      <div class="sos-container">
+        <div class="sos-header">
+          <div class="sos-pulse"></div>
+          <h2>Emergency SOS</h2>
+          <p>Select emergency type. Your location will be shared automatically.</p>
+        </div>
+        <div class="sos-grid">
+          <button class="sos-btn" data-type="medical">
+            <span class="sos-btn-icon">🏥</span>
+            <span class="sos-btn-label">Medical</span>
+          </button>
+          <button class="sos-btn" data-type="fire">
+            <span class="sos-btn-icon">🔥</span>
+            <span class="sos-btn-label">Fire</span>
+          </button>
+          <button class="sos-btn" data-type="security">
+            <span class="sos-btn-icon">🛡️</span>
+            <span class="sos-btn-label">Security</span>
+          </button>
+          <button class="sos-btn" data-type="accident">
+            <span class="sos-btn-icon">🚗</span>
+            <span class="sos-btn-label">Accident</span>
+          </button>
+          <button class="sos-btn" data-type="harassment">
+            <span class="sos-btn-icon">🚨</span>
+            <span class="sos-btn-label">Harassment</span>
+          </button>
+          <button class="sos-btn sos-btn-other" data-type="other">
+            <span class="sos-btn-icon">📝</span>
+            <span class="sos-btn-label">Other</span>
+          </button>
+        </div>
+        <div class="sos-contacts">
+          <h3>Emergency Contacts</h3>
+          <div class="contact-list" id="emergency-contacts">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- CHAT SCREEN ---- -->
+    <div id="chat-screen" class="tab-screen">
+      <div class="chat-header-bar">
+        <div class="chat-avatar">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="18" fill="#1A535C" opacity="0.3"/>
+            <circle cx="20" cy="20" r="8" fill="url(#chatGrad)"/>
+            <circle cx="20" cy="20" r="3" fill="#F7F0E3"/>
+            <defs>
+              <linearGradient id="chatGrad" x1="12" y1="12" x2="28" y2="28">
+                <stop offset="0%" stop-color="#C75B39"/>
+                <stop offset="100%" stop-color="#1A535C"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h3>CampusOS Assistant</h3>
+          <span class="chat-status">Online · Powered by AI</span>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-message bot">
+          <div class="message-bubble">
+            <p>👋 Hi! I'm your CampusOS assistant.</p>
+            <p>Ask me anything about the campus — locations, timings, directions, or nearby facilities.</p>
+          </div>
+          <span class="message-time">Now</span>
+        </div>
+        <div class="chat-suggestions" id="chat-suggestions">
+          <button class="suggestion-chip">Where is UIET?</button>
+          <button class="suggestion-chip">Nearest washroom</button>
+          <button class="suggestion-chip">Library timings</button>
+          <button class="suggestion-chip">My next class</button>
+          <button class="suggestion-chip">Canteen</button>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" id="chat-input" placeholder="Ask about any location..." />
+        <button class="chat-send-btn" id="btn-chat-send">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ---- PROFILE SCREEN ---- -->
+    <div id="profile-screen" class="tab-screen">
+      <div class="profile-container">
+        <div class="profile-header-card">
+          <div class="profile-avatar">🎓</div>
+          <h2 id="profile-display-name">Guest User</h2>
+          <p class="profile-userid" id="profile-display-id">COS2026001</p>
+          <span class="profile-badge">Student</span>
+        </div>
+
+        <div class="profile-section">
+          <h3>Quick Settings</h3>
+          <div class="setting-row">
+            <span>♿ Accessibility Mode</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-accessibility" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span>🌙 Dark Mode</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-dark" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span>🔊 Voice Navigation</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-voice" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span>📍 Show Amenities on Map</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-amenities" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3>About CampusOS</h3>
+          <p class="about-text">Version 1.0.0 · Built for CSJMU</p>
+          <p class="about-text">Offline map data: 47.3 MB · Last synced: Today</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- BUILDING DETAIL BOTTOM SHEET ---- -->
+    <div id="building-detail" class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-content">
+        <div class="building-header">
+          <div class="building-icon-large" id="detail-icon">🏛️</div>
+          <div class="building-header-text">
+            <h2 id="detail-name">Building Name</h2>
+            <p id="detail-dept" class="detail-dept">Department</p>
+          </div>
+          <button class="sheet-close" id="btn-close-detail">✕</button>
+        </div>
+
+        <div class="building-meta">
+          <div class="meta-chip"><span>🕐</span> <span id="detail-hours">9 AM – 5 PM</span></div>
+          <div class="meta-chip" id="detail-floors-chip"><span>🏢</span> <span id="detail-floors">3 Floors</span></div>
+          <div class="meta-chip accessible-chip" id="detail-accessible"><span>♿</span> Accessible</div>
+        </div>
+
+        <p class="building-description" id="detail-description">Building description goes here.</p>
+
+        <div class="detail-actions">
+          <button class="action-btn primary" id="btn-navigate-to">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.71 11.29l-9-9a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/></svg>
+            Navigate
+          </button>
+          <button class="action-btn" id="btn-share-location">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+            Share
+          </button>
+        </div>
+
+        <!-- Reviews -->
+        <div class="reviews-section" id="reviews-section">
+          <div class="reviews-header">
+            <h3>Reviews</h3>
+            <div class="avg-rating" id="avg-rating">
+              <span class="stars">★★★★☆</span>
+              <span class="rating-num">4.0</span>
+            </div>
+          </div>
+          <div class="reviews-list" id="reviews-list">
+            <!-- Filled by JS -->
+          </div>
+          <button class="btn-text" id="btn-write-review">✏️ Write a Review</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- NAVIGATION OVERLAY ---- -->
+    <div id="nav-overlay" class="nav-overlay hidden">
+      <div class="nav-top-bar">
+        <button class="nav-close" id="btn-close-nav">✕</button>
+        <div class="nav-info">
+          <span class="nav-eta" id="nav-eta">11 min</span>
+          <span class="nav-distance" id="nav-distance">850m</span>
+          <span class="nav-mode" id="nav-mode">🚶 Walking</span>
+        </div>
+      </div>
+      <div class="nav-bottom-card">
+        <div class="nav-step" id="nav-current-step">
+          <div class="nav-step-icon">↗️</div>
+          <div class="nav-step-text">
+            <p class="nav-instruction" id="nav-instruction">Exit Main Gate, walk north on Campus Road</p>
+            <span class="nav-step-dist" id="nav-step-dist">200m</span>
+          </div>
+        </div>
+        <div class="nav-destination">
+          <span id="nav-dest-name">UIET Building</span>
+        </div>
+        <div class="nav-speed">
+          <span class="speed-value" id="nav-speed">4.2</span>
+          <span class="speed-unit">km/h</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- AMENITY RESULTS OVERLAY ---- -->
+    <div id="amenity-overlay" class="amenity-overlay hidden">
+      <div class="amenity-overlay-header">
+        <h3 id="amenity-overlay-title">Nearby Water Coolers</h3>
+        <button class="sheet-close" id="btn-close-amenity">✕</button>
+      </div>
+      <div class="amenity-results" id="amenity-results">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- ---- SOS ACTIVE OVERLAY ---- -->
+    <div id="sos-active-overlay" class="sos-active-overlay hidden">
+      <div class="sos-active-content">
+        <div class="sos-active-pulse"></div>
+        <h2>🚨 Alert Sent!</h2>
+        <p class="sos-active-type" id="sos-active-type">Medical Emergency</p>
+        <p class="sos-active-info">Campus Security and Admin have been notified. Your location has been shared.</p>
+        <div class="sos-nearest" id="sos-nearest">
+          <p>Nearest resource:</p>
+          <div class="sos-nearest-card">
+            <span class="sos-nearest-icon">🏥</span>
+            <div>
+              <strong id="sos-nearest-name">Health Center</strong>
+              <span id="sos-nearest-dist">500m · 6 min walk</span>
+            </div>
+            <button class="btn-small" id="btn-sos-navigate">Navigate</button>
+          </div>
+        </div>
+        <button class="btn-danger" id="btn-sos-cancel">Cancel Alert</button>
+      </div>
+    </div>
+
+    <!-- ---- QR SCANNER OVERLAY ---- -->
+    <div id="qr-overlay" class="qr-overlay hidden">
+      <div class="qr-scanner-frame">
+        <div class="qr-header">
+          <button class="sheet-close" id="btn-close-qr">✕</button>
+          <h3>Scan QR at Building Entrance</h3>
+        </div>
+        <div class="qr-viewfinder">
+          <div class="qr-corners"></div>
+          <div class="qr-scan-line"></div>
+        </div>
+        <p class="qr-hint">Point your camera at the QR code on the building entrance</p>
+        <button class="btn-primary" id="btn-simulate-qr">Simulate QR Scan (Demo)</button>
+      </div>
+    </div>
+
+    <!-- ---- BOTTOM NAVIGATION ---- -->
+    <nav id="bottom-nav" class="bottom-nav">
+      <button class="nav-tab active" data-tab="map-screen">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+        <span>Map</span>
+      </button>
+      <button class="nav-tab" data-tab="timetable-screen">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button class="nav-tab sos-tab" data-tab="sos-screen">
+        <div class="sos-tab-btn">
+          <span>SOS</span>
+        </div>
+      </button>
+      <button class="nav-tab" data-tab="chat-screen">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+        <span>Chat</span>
+      </button>
+      <button class="nav-tab" data-tab="profile-screen">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
