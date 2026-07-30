@@ -17,6 +17,7 @@ let locationMarker = null;
 let selectedBuilding = null;
 let currentRoute = null;
 let amenityVisible = true;
+let tileLayer = null;
 let userLocation = [...CAMPUS_CENTER]; // Simulated location (near campus center)
 // Slightly offset for realism
 userLocation = [26.4485, 80.3315];
@@ -138,6 +139,7 @@ function initApp() {
   initAmenityPills();
   initEmergencyContacts();
   initModals();
+  initSettings();
 }
 
 // ============================================================
@@ -151,8 +153,8 @@ function initMap() {
     attributionControl: false,
   });
 
-  // Dark map tiles
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  // Map tiles (dark by default)
+  tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 20,
     subdomains: 'abcd',
   }).addTo(map);
@@ -837,4 +839,67 @@ function initModals() {
   document.getElementById('btn-voice').addEventListener('click', () => {
     document.getElementById('qr-overlay').classList.remove('hidden');
   });
+}
+
+// ============================================================
+// SETTINGS (Dark Mode, Accessibility, etc.)
+// ============================================================
+function initSettings() {
+  const darkToggle = document.getElementById('toggle-dark');
+  const accessToggle = document.getElementById('toggle-accessibility');
+  const amenityToggle = document.getElementById('toggle-amenities');
+
+  // Restore saved theme
+  const savedTheme = localStorage.getItem('campusos-theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-mode');
+    darkToggle.checked = false;
+    swapMapTiles(false);
+  } else {
+    darkToggle.checked = true;
+  }
+
+  // Dark Mode toggle
+  darkToggle.addEventListener('change', () => {
+    const isDark = darkToggle.checked;
+    if (isDark) {
+      document.body.classList.remove('light-mode');
+      localStorage.setItem('campusos-theme', 'dark');
+    } else {
+      document.body.classList.add('light-mode');
+      localStorage.setItem('campusos-theme', 'light');
+    }
+    swapMapTiles(isDark);
+  });
+
+  // Amenities toggle
+  if (amenityToggle) {
+    amenityToggle.addEventListener('change', () => {
+      amenityVisible = amenityToggle.checked;
+      addAmenityMarkers();
+    });
+  }
+
+  // Accessibility toggle (increase font size)
+  if (accessToggle) {
+    accessToggle.addEventListener('change', () => {
+      if (accessToggle.checked) {
+        document.documentElement.style.fontSize = '18px';
+      } else {
+        document.documentElement.style.fontSize = '15px';
+      }
+    });
+  }
+}
+
+function swapMapTiles(isDark) {
+  if (!map || !tileLayer) return;
+  map.removeLayer(tileLayer);
+  const url = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  tileLayer = L.tileLayer(url, {
+    maxZoom: 20,
+    subdomains: 'abcd',
+  }).addTo(map);
 }

@@ -52,6 +52,50 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ---- Light Mode ---- */
+body.light-mode {
+  --bg: #F5F3EF;
+  --surface: #FFFFFF;
+  --card: #FFFFFF;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --cream: #1A1A2E;
+  --text: #2D2D3A;
+  --text-dim: #6B7280;
+  --glass: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --primary-glow: rgba(199, 91, 57, 0.12);
+  --secondary-glow: rgba(26, 83, 92, 0.12);
+  --danger-glow: rgba(239, 68, 68, 0.12);
+}
+
+body.light-mode .marker-label {
+  color: #1A1A2E;
+  background: rgba(255, 255, 255, 0.9);
+  text-shadow: none;
+}
+
+body.light-mode .leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #2D2D3A !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .location-dot-inner {
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.3);
+}
+
+body.light-mode .otp-box {
+  color: #1A1A2E;
+}
+
+body.light-mode .toggle input:checked + .toggle-slider {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
 html, body {
   height: 100dvh;
   width: 100%;
@@ -472,9 +516,6 @@ input, select, button {
    ============================================================ */
 #app-container {
   z-index: 80;
-  height: 100dvh;
-  max-height: 100dvh;
-  position: relative;
 }
 
 .tab-screen {
